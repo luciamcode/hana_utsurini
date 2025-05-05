@@ -1,7 +1,7 @@
 {
   "name": "華色うつりにけりな",
-  "short_name": "華色うつりにけりな",
-  "start_url": "./",
+  "short_name": "華色",
+  "start_url": "./?v=99",
   "display": "standalone",
   "background_color": "#f3e5f5",
   "theme_color": "#4a148c",
