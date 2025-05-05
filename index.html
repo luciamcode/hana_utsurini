@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>華色うつりにけりな - テキスト変換のことのは</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f3e5f5">
   <style>
     body {
       font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
@@ -60,13 +62,12 @@
   <p class="subtitle">〜 文章のかたち、うつろいて 〜</p>
 
   <label for="input">入力欄：</label>
-  <textarea id="input" placeholder="ここに HTML の &lt;p&gt; タグやテキストを貼り付け"></textarea>
+  <textarea id="input" placeholder="ここに HTML の &lt;p&gt; や Markdown を貼り付けてください"></textarea>
 
   <div class="buttons">
     <button onclick="pToMd()">p → Markdown</button>
     <button onclick="mdToP()">Markdown → p</button>
     <button onclick="plainToMd()">プレーン → Markdown</button>
-    <button onclick="indent()">→（インデント）</button>
   </div>
 
   <label for="output">出力欄：</label>
@@ -93,17 +94,14 @@
     function plainToMd() {
       const input = document.getElementById('input').value;
       const lines = input.split(/\r?\n/).filter(line => line.trim() !== '');
-      const converted = lines.map(line => `- ${line}`).join('\n');
+      const converted = lines.map(line => {
+        const indentMatch = line.match(/^(\s*)/);
+        const indent = indentMatch ? indentMatch[1].length : 0;
+        const indentLevel = Math.floor(indent / 2); // 2スペースで1段
+        const bulletIndent = '  '.repeat(indentLevel);
+        return `${bulletIndent}- ${line.trim()}`;
+      }).join('\n');
       document.getElementById('output').value = converted;
-    }
-
-    function indent() {
-      const input = document.getElementById('input');
-      const cursorPos = input.selectionStart;
-      const text = input.value;
-      input.value = text.slice(0, cursorPos) + '  ' + text.slice(cursorPos);
-      input.selectionStart = input.selectionEnd = cursorPos + 2;
-      input.focus();
     }
 
     document.getElementById('copyOutput').addEventListener('click', () => {
@@ -124,6 +122,14 @@
         alert('このブラウザは共有機能に対応していません');
       }
     });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.warn('Service Worker registration failed:', err);
+        });
+      });
+    }
   </script>
 </body>
 </html>
