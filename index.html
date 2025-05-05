@@ -75,9 +75,19 @@
   <textarea id="output" readonly placeholder="変換結果がここに表示されます"></textarea>
 
   <div class="output-buttons">
-    <button id="copyOutput">コピー</button>
-    <button id="shareOutput">共有</button>
-  </div>
+<div class="output-buttons">
+  <button id="copyOutput">コピー</button>
+  <button id="shareOutput">共有</button>
+  <button onclick="sendTo('https://luciamcode.github.io/PSA_kotonoha/')">→ PSA</button>
+  <button onclick="sendTo('https://luciamcode.github.io/kotonoha_editor/')">→ エディタ</button>
+
+ <button onclick="sendTo('https://luciamcode.github.io/kotoba_issen/')">→ 一撰</button>
+
+
+</div>
+
+
+ 
 
   <script>
     function pToMd() {
