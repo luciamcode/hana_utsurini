@@ -150,6 +150,19 @@
         });
       });
     }
+
+
+  function sendTo(url) {
+    const text = document.getElementById("output").value;
+    const encoded = encodeURIComponent(text);
+    window.open(`${url}?text=${encoded}`, "_blank");
+  }
+
+
+
+
+
+
   </script>
 </body>
 </html>
