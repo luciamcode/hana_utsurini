@@ -1,8 +1,9 @@
-<!DOCTYPE html><html lang="ja">
+<!DOCTYPE html>
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>華色うつりにけりな - テキスト変換のことのは</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
@@ -36,9 +37,11 @@
     #output { height: 140px; }
     .buttons, .output-buttons {
       margin-top: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
     button {
-      margin-right: 0.5rem;
       padding: 0.4rem 0.8rem;
       font-size: 0.9rem;
       background: #ce93d8;
@@ -51,65 +54,76 @@
       background: #ba68c8;
     }
   </style>
-
-
-<link rel="manifest" href="./manifest.json">
-
 </head>
 <body>
   <h2>華色うつりにけりな</h2>
   <p class="subtitle">〜 文章のかたち、うつろいて 〜</p>
+
   <label for="input">入力欄：</label>
   <textarea id="input" placeholder="ここに HTML の &lt;p&gt; タグやテキストを貼り付け"></textarea>
+
   <div class="buttons">
-  <button onclick="pToMd()">p → Markdown</button>
-  <button onclick="mdToP()">Markdown → p</button>
-  <button onclick="plainToMd()">プレーン → Markdown</button>
-  <button onclick="indent()">→（インデント）</button>
-</div>
+    <button onclick="pToMd()">p → Markdown</button>
+    <button onclick="mdToP()">Markdown → p</button>
+    <button onclick="plainToMd()">プレーン → Markdown</button>
+    <button onclick="indent()">→（インデント）</button>
+  </div>
+
   <label for="output">出力欄：</label>
   <textarea id="output" readonly placeholder="変換結果がここに表示されます"></textarea>
+
   <div class="output-buttons">
     <button id="copyOutput">コピー</button>
     <button id="shareOutput">共有</button>
   </div>
+
   <script>
-  function pToMd() { /*...*/ }
-  function mdToP() { /*...*/ }
-  function plainToMd() { /*...*/ }
-
-  function indent() {
-    const input = document.getElementById('input');
-    const cursorPos = input.selectionStart;
-    const text = input.value;
-    input.value = text.slice(0, cursorPos) + '  ' + text.slice(cursorPos);
-    input.selectionStart = input.selectionEnd = cursorPos + 2;
-    input.focus();
-  }
-
-  // 以下、コピー＆共有のイベントハンドラ
-
-// コピー機能
-document.getElementById('copyOutput').addEventListener('click', () => {
-  const out = document.getElementById('output');
-  out.select();
-  document.execCommand('copy');
-});
-
-// 共有機能
-document.getElementById('shareOutput').addEventListener('click', async () => {
-  const text = document.getElementById('output').value;
-  if (navigator.share) {
-    try {
-      await navigator.share({ text });
-    } catch (err) {
-      console.error('共有に失敗:', err);
+    function pToMd() {
+      const input = document.getElementById('input').value;
+      const converted = input.replace(/<p>(.*?)<\/p>/g, '- $1');
+      document.getElementById('output').value = converted;
     }
-  } else {
-    alert('このブラウザは共有機能に対応していません');
-  }
-});
 
+    function mdToP() {
+      const input = document.getElementById('input').value;
+      const converted = input.replace(/^\s*-\s*(.*)$/gm, '<p>$1</p>');
+      document.getElementById('output').value = converted;
+    }
+
+    function plainToMd() {
+      const input = document.getElementById('input').value;
+      const lines = input.split(/\r?\n/).filter(line => line.trim() !== '');
+      const converted = lines.map(line => `- ${line}`).join('\n');
+      document.getElementById('output').value = converted;
+    }
+
+    function indent() {
+      const input = document.getElementById('input');
+      const cursorPos = input.selectionStart;
+      const text = input.value;
+      input.value = text.slice(0, cursorPos) + '  ' + text.slice(cursorPos);
+      input.selectionStart = input.selectionEnd = cursorPos + 2;
+      input.focus();
+    }
+
+    document.getElementById('copyOutput').addEventListener('click', () => {
+      const out = document.getElementById('output');
+      out.select();
+      document.execCommand('copy');
+    });
+
+    document.getElementById('shareOutput').addEventListener('click', async () => {
+      const text = document.getElementById('output').value;
+      if (navigator.share) {
+        try {
+          await navigator.share({ text });
+        } catch (err) {
+          console.error('共有に失敗:', err);
+        }
+      } else {
+        alert('このブラウザは共有機能に対応していません');
+      }
+    });
   </script>
 </body>
 </html>
