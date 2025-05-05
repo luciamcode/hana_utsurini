@@ -74,32 +74,20 @@
     <button id="shareOutput">共有</button>
   </div>
   <script>
-    function pToMd() {
-      const input = document.getElementById('input').value;
-      const converted = input.replace(/<p>(.*?)<\/p>/g, '- $1');
-      document.getElementById('output').value = converted;
-    }function mdToP() {
-  const input = document.getElementById('input').value;
-  const converted = input.replace(/^\s*-\s*(.*)$/gm, '<p>$1<\/p>');
-  document.getElementById('output').value = converted;
-}
+  function pToMd() { /*...*/ }
+  function mdToP() { /*...*/ }
+  function plainToMd() { /*...*/ }
 
-function plainToMd() {
-  const input = document.getElementById('input').value;
-  const lines = input.split(/\r?\n/).filter(line => line.trim() !== '');
-  document.getElementById('output').value = lines.map(line => `- ${line}`).join('\n');
-}
+  function indent() {
+    const input = document.getElementById('input');
+    const cursorPos = input.selectionStart;
+    const text = input.value;
+    input.value = text.slice(0, cursorPos) + '  ' + text.slice(cursorPos);
+    input.selectionStart = input.selectionEnd = cursorPos + 2;
+    input.focus();
+  }
 
-// インデント機能（Tab相当）
-function insertTab() {
-  const textarea = document.getElementById('input');
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const value = textarea.value;
-  const tab = '  ';
-  textarea.value = value.substring(0, start) + tab + value.substring(end);
-  textarea.selectionStart = textarea.selectionEnd = start + tab.length;
-}
+  // 以下、コピー＆共有のイベントハンドラ
 
 // コピー機能
 document.getElementById('copyOutput').addEventListener('click', () => {
