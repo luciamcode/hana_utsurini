@@ -68,6 +68,7 @@
     <button onclick="pToMd()">p → Markdown</button>
     <button onclick="mdToP()">Markdown → p</button>
     <button onclick="plainToMd()">プレーン → Markdown</button>
+    <button onclick="insertIndent()">→（インデント）</button>
   </div>
 
   <label for="output">出力欄：</label>
@@ -102,6 +103,15 @@
         return `${bulletIndent}- ${line.trim()}`;
       }).join('\n');
       document.getElementById('output').value = converted;
+    }
+
+    function insertIndent() {
+      const input = document.getElementById('input');
+      const cursorPos = input.selectionStart;
+      const text = input.value;
+      input.value = text.slice(0, cursorPos) + '  ' + text.slice(cursorPos);
+      input.selectionStart = input.selectionEnd = cursorPos + 2;
+      input.focus();
     }
 
     document.getElementById('copyOutput').addEventListener('click', () => {
