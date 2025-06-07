@@ -55,11 +55,20 @@
     button:hover {
       background: #ba68c8;
     }
+    input[type="file"] {
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
   <h2>華色うつりにけりな</h2>
   <p class="subtitle">〜 文章のかたち、うつろいて 〜</p>
+
+  <!-- ファイル読み込み -->
+  <label>
+    テキストファイル読み込み：
+    <input type="file" id="fileInput" accept=".txt">
+  </label>
 
   <label for="input">入力欄：</label>
   <textarea id="input" placeholder="ここに HTML の &lt;p&gt; や Markdown を貼り付けてください"></textarea>
@@ -75,94 +84,101 @@
   <textarea id="output" readonly placeholder="変換結果がここに表示されます"></textarea>
 
   <div class="output-buttons">
-<div class="output-buttons">
-  <button id="copyOutput">コピー</button>
-  <button id="shareOutput">共有</button>
-  <button onclick="sendTo('https://luciamcode.github.io/PSA_kotonoha/')">→ PSA</button>
-  <button onclick="sendTo('https://luciamcode.github.io/kotonoha_editor/')">→ エディタ</button>
-
- <button onclick="sendTo('https://luciamcode.github.io/kotoba_issen/')">→ 一撰</button>
-
-
-</div>
-
-
- 
+    <button id="copyOutput">コピー</button>
+    <button onclick="saveOutput()">保存</button>
+    <button id="shareOutput">共有</button>
+    <button onclick="sendTo('https://luciamcode.github.io/PSA_kotonoha/')">→ PSA</button>
+    <button onclick="sendTo('https://luciamcode.github.io/kotonoha_editor/')">→ エディタ</button>
+    <button onclick="sendTo('https://luciamcode.github.io/kotoba_issen/')">→ 一撰</button>
+  </div>
 
   <script>
+    // ファイル読み込み
+    document.getElementById('fileInput').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById('input').value = ev.target.result;
+      };
+      reader.readAsText(file, 'UTF-8');
+    });
+
+    // 保存（出力をテキストファイルとしてダウンロード）
+    function saveOutput() {
+      const text = document.getElementById('output').value;
+      if (!text) return;
+      const blob = new Blob([text], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'output.txt';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // コピー & 共有
+    document.getElementById('copyOutput').addEventListener('click', () => {
+      const out = document.getElementById('output');
+      out.select();
+      document.execCommand('copy');
+    });
+    document.getElementById('shareOutput').addEventListener('click', async () => {
+      const text = document.getElementById('output').value;
+      if (navigator.share) {
+        try { await navigator.share({ text }); }
+        catch (err) { console.error('共有に失敗:', err); }
+      } else {
+        alert('このブラウザは共有機能に対応していません');
+      }
+    });
+
+    // 既存の変換関数
     function pToMd() {
       const input = document.getElementById('input').value;
       const converted = input.replace(/<p>(.*?)<\/p>/g, '- $1');
       document.getElementById('output').value = converted;
     }
-
     function mdToP() {
       const input = document.getElementById('input').value;
       const converted = input.replace(/^\s*-\s*(.*)$/gm, '<p>$1</p>');
       document.getElementById('output').value = converted;
     }
-
     function plainToMd() {
       const input = document.getElementById('input').value;
       const lines = input.split(/\r?\n/).filter(line => line.trim() !== '');
       const converted = lines.map(line => {
         const indentMatch = line.match(/^(\s*)/);
         const indent = indentMatch ? indentMatch[1].length : 0;
-        const indentLevel = Math.floor(indent / 2); // 2スペースで1段
+        const indentLevel = Math.floor(indent / 2);
         const bulletIndent = '  '.repeat(indentLevel);
         return `${bulletIndent}- ${line.trim()}`;
       }).join('\n');
       document.getElementById('output').value = converted;
     }
-
     function insertIndent() {
       const input = document.getElementById('input');
-      const cursorPos = input.selectionStart;
+      const pos = input.selectionStart;
       const text = input.value;
-      input.value = text.slice(0, cursorPos) + '  ' + text.slice(cursorPos);
-      input.selectionStart = input.selectionEnd = cursorPos + 2;
+      input.value = text.slice(0, pos) + '  ' + text.slice(pos);
+      input.selectionStart = input.selectionEnd = pos + 2;
       input.focus();
     }
 
-    document.getElementById('copyOutput').addEventListener('click', () => {
-      const out = document.getElementById('output');
-      out.select();
-      document.execCommand('copy');
-    });
+    // 外部サービスへ送信
+    function sendTo(url) {
+      const text = document.getElementById("output").value;
+      const encoded = encodeURIComponent(text);
+      window.open(`${url}?text=${encoded}`, "_blank");
+    }
 
-    document.getElementById('shareOutput').addEventListener('click', async () => {
-      const text = document.getElementById('output').value;
-      if (navigator.share) {
-        try {
-          await navigator.share({ text });
-        } catch (err) {
-          console.error('共有に失敗:', err);
-        }
-      } else {
-        alert('このブラウザは共有機能に対応していません');
-      }
-    });
-
+    // PWA用 Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(err => {
-          console.warn('Service Worker registration failed:', err);
+          console.warn('Service Worker登録失敗:', err);
         });
       });
     }
-
-
-  function sendTo(url) {
-    const text = document.getElementById("output").value;
-    const encoded = encodeURIComponent(text);
-    window.open(`${url}?text=${encoded}`, "_blank");
-  }
-
-
-
-
-
-
   </script>
 </body>
 </html>
